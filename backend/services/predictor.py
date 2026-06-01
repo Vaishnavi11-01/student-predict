@@ -23,9 +23,8 @@ def build_features(student_id: int, db: Session) -> dict:
         'date': a.date
     } for a in attendance])
     
-    # Last 30 days
-    thirty_days_ago = datetime.now() - timedelta(days=30)
-    recent = df_g[df_g["date"] >= thirty_days_ago] if not df_g.empty else df_g
+    # Last 30 days - use all grades for simplicity
+    recent = df_g
     
     features = {
         # Academic features
