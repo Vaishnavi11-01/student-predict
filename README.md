@@ -17,16 +17,14 @@ An AI-powered system to predict student academic performance, attendance trends,
 ### Backend
 - FastAPI (Python web framework)
 - SQLAlchemy (ORM)
-- PostgreSQL (Database)
-- Celery (Background tasks)
-- XGBoost, TensorFlow, scikit-learn (ML models)
+- SQLite (Database)
+- XGBoost, scikit-learn (ML models)
 - Anthropic Claude API (AI suggestions)
 - Twilio, SendGrid (Alerts)
 
 ### Frontend
-- React
-- Recharts (Data visualization)
-- Axios (API client)
+- HTML/JavaScript Dashboard
+- Simple HTTP Server
 
 ## Project Structure
 
@@ -34,17 +32,14 @@ An AI-powered system to predict student academic performance, attendance trends,
 student-predict/
 ├── backend/
 │   ├── main.py              # FastAPI app entry point
-│   ├── models/              # ML model files (.pkl, .h5)
+│   ├── models/              # ML model files (.pkl)
 │   ├── routers/             # API route handlers
 │   ├── services/            # Business logic (predictions, alerts)
 │   ├── db/                  # Database models + migrations
-│   ├── tasks.py             # Celery background jobs
+│   ├── ml/                  # ML training scripts
 │   └── requirements.txt
 ├── frontend/
-│   ├── src/
-│   │   ├── pages/           # Dashboard, ParentPortal, StudentDetail
-│   │   ├── components/      # RiskBadge, AttendanceChart, SuggestionCard
-│   │   └── api/             # Axios API calls
+│   ├── simple-dashboard.html # HTML dashboard
 │   └── package.json
 ```
 
@@ -54,14 +49,13 @@ student-predict/
 ```bash
 cd backend
 pip install -r requirements.txt
-uvicorn main:app --reload
+python -m uvicorn main:app --host 0.0.0.0 --port 8000
 ```
 
 ### Frontend
 ```bash
 cd frontend
-npm install
-npm start
+python -m http.server 3000
 ```
 
 ## API Endpoints
