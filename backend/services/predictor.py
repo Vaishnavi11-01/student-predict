@@ -1,8 +1,10 @@
 import numpy as np
+import joblib
 from sqlalchemy.orm import Session
 from db.models import Student, Grade, Attendance, Prediction
 from datetime import datetime, timedelta
 import pandas as pd
+import os
 
 def build_features(student_id: int, db: Session) -> dict:
     """Build feature vector for a student"""
@@ -59,18 +61,35 @@ def max_consecutive_absences(df):
     return max_streak
 
 def predict_student(features: dict, student_id: int, db: Session) -> dict:
-    """Make predictions for a student (simplified version without actual ML models)"""
-    # In production, load actual ML models here
-    # For now, use rule-based predictions
+    """Make predictions for a student using trained ML model"""
     
-    avg_score = features["avg_score_30d"]
-    attendance_rate = features["attendance_rate_30d"]
-    weak_subjects = features["weak_subject_count"]
+    # Load trained model
+    model_path = os.path.join(os.path.dirname(__file__), '../models/dropout_model.pkl')
+    if os.path.exists(model_path):
+        model = joblib.load(model_path)
+        
+        # Prepare features for model
+        feature_vector = np.array([
+            features["avg_score_30d"],
+            features["attendance_rate_30d"],
+            features["weak_subject_count"],
+            features["consecutive_absences"],
+            features["score_trend"],
+            features["income_tier"]
+        ]).reshape(1, -1)
+        
+        # Predict dropout probability
+        dropout_prob = float(model.predict_proba(feature_vector)[0][1])
+    else:
+        # Fallback to rule-based if model not found
+        avg_score = features["avg_score_30d"]
+        attendance_rate = features["attendance_rate_30d"]
+        dropout_prob = 1.0 - (attendance_rate * 0.4 + avg_score / 100 * 0.4 + (5 - features["income_tier"]) / 5 * 0.2)
+        dropout_prob = max(0, min(1, dropout_prob))
     
-    # Simulated predictions
-    perf_score = min(100, max(0, avg_score + np.random.normal(0, 5)))
-    dropout_prob = 1.0 - (attendance_rate * 0.4 + avg_score / 100 * 0.4 + (5 - features["income_tier"]) / 5 * 0.2)
-    dropout_prob = max(0, min(1, dropout_prob))
+    # Calculate other predictions
+    perf_score = features["avg_score_30d"] + np.random.normal(0, 3)
+    perf_score = min(100, max(0, perf_score))
     
     risk_level = (
         "high" if dropout_prob > 0.65 else
@@ -82,7 +101,7 @@ def predict_student(features: dict, student_id: int, db: Session) -> dict:
     prediction = Prediction(
         student_id=student_id,
         perf_score=perf_score,
-        attend_rate=attendance_rate * 100,
+        attend_rate=features["attendance_rate_30d"] * 100,
         dropout_risk=dropout_prob,
         risk_level=risk_level,
         generated_at=datetime.now()
@@ -93,7 +112,7 @@ def predict_student(features: dict, student_id: int, db: Session) -> dict:
     return {
         "student_id": student_id,
         "perf_score": round(perf_score, 1),
-        "attend_rate": round(attendance_rate * 100, 1),
+        "attend_rate": round(features["attendance_rate_30d"] * 100, 1),
         "dropout_risk": round(dropout_prob * 100, 1),
         "risk_level": risk_level,
     }
