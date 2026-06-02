@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import students, predictions, suggestions, dashboard, auth
+from routers import students, predictions, suggestions, dashboard, auth, reports
 from routers import students_mongo, predictions_mongo, dashboard_mongo
 from db.session import init_db
 from db.mongodb import test_connection
