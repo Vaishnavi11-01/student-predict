@@ -18,6 +18,7 @@ predictions_collection = db["predictions"]
 attendance_collection = db["attendance"]
 grades_collection = db["grades"]
 suggestions_collection = db["suggestions"]
+users_collection = db["users"]
 
 def serialize_doc(doc):
     """Convert MongoDB ObjectId to string for JSON serialization"""
