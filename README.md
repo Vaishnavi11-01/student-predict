@@ -2,6 +2,10 @@
 
 An AI-powered system to predict student academic performance, attendance trends, and dropout risk.
 
+## Project Overview
+
+Developed a machine learning model to predict student exam scores based on study hours, attendance, and previous performance. Implemented data preprocessing, feature selection, and regression algorithms using Python and Scikit-learn to ensure accurate predictions.
+
 ## Features
 
 - **Performance Prediction**: Predicts next exam scores using XGBoost

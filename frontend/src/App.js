@@ -1,10 +1,10 @@
 import React from 'react';
-import Dashboard from './pages/Dashboard';
+import ModernDashboard from './pages/ModernDashboard';
 
 function App() {
   return (
     <div className="App">
-      <Dashboard />
+      <ModernDashboard />
     </div>
   );
 }
