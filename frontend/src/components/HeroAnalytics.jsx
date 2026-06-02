@@ -34,7 +34,7 @@ export default function HeroAnalytics() {
   });
 
   useEffect(() => {
-    fetch('http://localhost:8000/dashboard/stats')
+    fetch('http://localhost:8000/analytics/stats')
       .then(res => res.json())
       .then(data => setStats(data))
       .catch(err => console.error('Error fetching stats:', err));

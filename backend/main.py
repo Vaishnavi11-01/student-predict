@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import students, predictions, suggestions, dashboard
+from routers import students, predictions, suggestions, dashboard, auth
 from db.session import init_db
 
 app = FastAPI(title="EduPredict API")
@@ -18,7 +18,8 @@ app.add_middleware(
 app.include_router(students.router, prefix="/students", tags=["students"])
 app.include_router(predictions.router, prefix="/predict", tags=["predictions"])
 app.include_router(suggestions.router, prefix="/suggestions", tags=["suggestions"])
-app.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"])
+app.include_router(dashboard.router, prefix="/analytics", tags=["analytics"])
+app.include_router(auth.router, prefix="/auth", tags=["auth"])
 
 @app.on_event("startup")
 async def startup_event():
