@@ -7,6 +7,10 @@ import AIRiskHeatmap from '../components/AIRiskHeatmap';
 import AIInsightsPanel from '../components/AIInsightsPanel';
 import PredictionConfidenceMeter from '../components/PredictionConfidenceMeter';
 import StudentGrowthTimeline from '../components/StudentGrowthTimeline';
+import PerformanceDistribution from '../components/PerformanceDistribution';
+import RiskAnalysis from '../components/RiskAnalysis';
+import ScoreTrends from '../components/ScoreTrends';
+import AttendanceVsScore from '../components/AttendanceVsScore';
 
 export default function ModernDashboard() {
   const navigate = useNavigate();
@@ -88,6 +92,18 @@ export default function ModernDashboard() {
           <div className="lg:col-span-2">
             <PredictionConfidenceMeter studentId={1} />
           </div>
+        </div>
+
+        <h2 className="text-2xl font-bold mt-8 mb-4">Analytics Dashboard</h2>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <PerformanceDistribution />
+          <RiskAnalysis />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <ScoreTrends />
+          <AttendanceVsScore />
         </div>
       </div>
     </div>
