@@ -6,11 +6,16 @@ const StatCard = ({ icon: Icon, title, value, color, delay }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
+    whileHover={{ scale: 1.05, y: -8 }}
+    whileTap={{ scale: 0.95 }}
     transition={{ delay, duration: 0.5 }}
-    className="glass-card p-6 hover:scale-105 transition-transform duration-300"
+    className="gradient-card p-6 animate-float"
+    style={{ animationDelay: `${delay}s` }}
   >
     <div className="flex items-center justify-between mb-4">
-      <Icon className={`w-8 h-8 ${color}`} />
+      <div className={`w-12 h-12 rounded-full bg-gradient-to-r from-accent-cyan to-accent-purple flex items-center justify-center animate-pulse-glow`}>
+        <Icon className={`w-6 h-6 ${color}`} />
+      </div>
       <div className={`w-3 h-3 rounded-full ${color} animate-pulse`} />
     </div>
     <h3 className="text-gray-400 text-sm mb-2">{title}</h3>
