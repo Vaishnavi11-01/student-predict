@@ -1,7 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routers import students, predictions, suggestions, dashboard, auth
+from routers import students_mongo, predictions_mongo, dashboard_mongo
 from db.session import init_db
+from db.mongodb import test_connection
 
 app = FastAPI(title="EduPredict API")
 
@@ -25,6 +27,8 @@ app.include_router(auth.router, prefix="/auth", tags=["auth"])
 async def startup_event():
     """Initialize database on startup"""
     init_db()
+    # Test MongoDB connection (optional)
+    test_connection()
 
 @app.get("/")
 def root():
