@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { AlertCircle, Shield, CheckCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
-const StudentRiskCard = ({ student, risk, delay }) => {
+const StudentRiskCard = ({ student, risk, delay, onClick }) => {
   const riskConfig = {
     high: {
       color: 'bg-accent-red/20',
@@ -32,6 +33,7 @@ const StudentRiskCard = ({ student, risk, delay }) => {
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay, duration: 0.3 }}
+      onClick={onClick}
       className={`glass-card p-4 border-2 ${config.border} ${config.color} hover:scale-105 transition-all cursor-pointer`}
     >
       <div className="flex items-center justify-between mb-2">
@@ -46,16 +48,29 @@ const StudentRiskCard = ({ student, risk, delay }) => {
 };
 
 export default function AIRiskHeatmap() {
-  const students = [
-    { name: 'Arjun Rao', risk: 'high' },
-    { name: 'Priya Sharma', risk: 'medium' },
-    { name: 'Rahul Kumar', risk: 'low' },
-    { name: 'Sneha Patel', risk: 'high' },
-    { name: 'Vikram Singh', risk: 'low' },
-    { name: 'Anjali Gupta', risk: 'medium' },
-    { name: 'Karan Mehta', risk: 'low' },
-    { name: 'Ishita Joshi', risk: 'high' },
-  ];
+  const [students, setStudents] = useState([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    fetch('http://localhost:8000/students/')
+      .then(res => res.json())
+      .then(data => {
+        // Fetch predictions for each student
+        const studentWithRisk = Promise.all(
+          data.map(async (student) => {
+            const predRes = await fetch(`http://localhost:8000/predict/${student.id}`);
+            const predData = await predRes.json();
+            return {
+              name: student.name,
+              id: student.id,
+              risk: predData.risk_level
+            };
+          })
+        );
+        studentWithRisk.then(results => setStudents(results.slice(0, 8)));
+      })
+      .catch(err => console.error('Error fetching students:', err));
+  }, []);
 
   return (
     <div className="glass-card p-6">
@@ -66,10 +81,11 @@ export default function AIRiskHeatmap() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {students.map((student, index) => (
           <StudentRiskCard
-            key={student.name}
+            key={student.id}
             student={student.name}
             risk={student.risk}
             delay={index * 0.05}
+            onClick={() => navigate(`/student/${student.id}`)}
           />
         ))}
       </div>

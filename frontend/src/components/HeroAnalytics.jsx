@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Users, TrendingUp, AlertTriangle, GraduationCap } from 'lucide-react';
 
@@ -26,33 +26,47 @@ const StatCard = ({ icon: Icon, title, value, color, delay }) => (
 );
 
 export default function HeroAnalytics() {
+  const [stats, setStats] = useState({
+    total_students: 0,
+    avg_score: 0,
+    attendance: 0,
+    high_risk: 0
+  });
+
+  useEffect(() => {
+    fetch('http://localhost:8000/dashboard/stats')
+      .then(res => res.json())
+      .then(data => setStats(data))
+      .catch(err => console.error('Error fetching stats:', err));
+  }, []);
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
       <StatCard
         icon={Users}
         title="Total Students"
-        value="1,247"
+        value={stats.total_students}
         color="text-accent-cyan"
         delay={0}
       />
       <StatCard
         icon={TrendingUp}
         title="Avg Score"
-        value="78.5%"
+        value={`${stats.avg_score}%`}
         color="text-accent-green"
         delay={0.1}
       />
       <StatCard
         icon={GraduationCap}
         title="Attendance"
-        value="92.3%"
+        value={`${stats.attendance}%`}
         color="text-accent-purple"
         delay={0.2}
       />
       <StatCard
         icon={AlertTriangle}
         title="High Risk"
-        value="23"
+        value={stats.high_risk}
         color="text-accent-red"
         delay={0.3}
       />
