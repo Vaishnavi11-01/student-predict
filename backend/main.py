@@ -22,6 +22,7 @@ app.include_router(predictions.router, prefix="/predict", tags=["predictions"])
 app.include_router(suggestions.router, prefix="/suggestions", tags=["suggestions"])
 app.include_router(dashboard.router, prefix="/analytics", tags=["analytics"])
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
+app.include_router(reports.router, prefix="/reports", tags=["reports"])
 
 @app.on_event("startup")
 async def startup_event():

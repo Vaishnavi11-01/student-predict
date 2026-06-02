@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, User, TrendingUp, Calendar, Brain, Target, History, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, User, TrendingUp, Calendar, Brain, Target, History, AlertTriangle, Download } from 'lucide-react';
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, LineChart, Line } from 'recharts';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -12,6 +12,23 @@ export default function StudentDetail() {
   const [suggestions, setSuggestions] = useState([]);
   const [predictionHistory, setPredictionHistory] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const downloadPDF = async () => {
+    try {
+      const response = await fetch(`http://localhost:8000/reports/student/${studentId}`);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `student_${studentId}_report.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+    }
+  };
 
   useEffect(() => {
     Promise.all([
@@ -78,6 +95,16 @@ export default function StudentDetail() {
       >
         <ArrowLeft className="w-5 h-5" />
         Back to Dashboard
+      </motion.button>
+
+      <motion.button
+        onClick={downloadPDF}
+        className="mb-6 ml-4 flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-accent-cyan to-accent-purple rounded-lg hover:opacity-90 transition-opacity"
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+      >
+        <Download className="w-5 h-5" />
+        Download Report
       </motion.button>
 
       {/* Student Profile Header */}
