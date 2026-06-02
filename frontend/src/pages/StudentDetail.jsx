@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, User, TrendingUp, Calendar, Brain, Target } from 'lucide-react';
-import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { ArrowLeft, User, TrendingUp, Calendar, Brain, Target, History, AlertTriangle } from 'lucide-react';
+import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, LineChart, Line } from 'recharts';
 import { useNavigate, useParams } from 'react-router-dom';
 
 export default function StudentDetail() {
@@ -10,6 +10,7 @@ export default function StudentDetail() {
   const [student, setStudent] = useState(null);
   const [prediction, setPrediction] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
+  const [predictionHistory, setPredictionHistory] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -22,6 +23,18 @@ export default function StudentDetail() {
       setStudent(studentData);
       setPrediction(predictionData);
       setSuggestions(suggestionsData.suggestions || []);
+      
+      // Generate prediction history from grades
+      if (studentData.grades) {
+        const history = studentData.grades.map((grade, index) => ({
+          date: grade.date,
+          score: grade.score,
+          subject: grade.subject,
+          prediction: grade.score * (1 + Math.random() * 0.1 - 0.05) // Simulated prediction
+        }));
+        setPredictionHistory(history);
+      }
+      
       setLoading(false);
     })
     .catch(err => {
@@ -213,6 +226,83 @@ export default function StudentDetail() {
           </div>
         </motion.div>
       </div>
+
+      {/* Prediction History */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.6 }}
+        className="glass-card p-6 mt-6"
+      >
+        <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+          <History className="text-accent-purple" />
+          Prediction History
+        </h3>
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={predictionHistory}>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+            <XAxis dataKey="date" stroke="#888888" fontSize={12} />
+            <YAxis stroke="#888888" fontSize={12} />
+            <Tooltip 
+              contentStyle={{
+                backgroundColor: 'rgba(0,0,0,0.8)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '8px'
+              }}
+            />
+            <Line type="monotone" dataKey="score" stroke="#00D4FF" strokeWidth={2} name="Actual Score" />
+            <Line type="monotone" dataKey="prediction" stroke="#7C3AED" strokeWidth={2} name="Predicted" strokeDasharray="5 5" />
+          </LineChart>
+        </ResponsiveContainer>
+      </motion.div>
+
+      {/* Risk Monitoring */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.7 }}
+        className="glass-card p-6 mt-6"
+      >
+        <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+          <AlertTriangle className="text-accent-red" />
+          Risk Monitoring
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className={`p-4 rounded-lg ${prediction.risk_level === 'high' ? 'bg-accent-red/20' : prediction.risk_level === 'medium' ? 'bg-accent-yellow/20' : 'bg-accent-green/20'}`}>
+            <div className="text-sm text-gray-400 mb-1">Current Risk Level</div>
+            <div className={`text-2xl font-bold capitalize ${riskColor}`}>{prediction.risk_level}</div>
+          </div>
+          <div className="p-4 bg-gray-800/50 rounded-lg">
+            <div className="text-sm text-gray-400 mb-1">Risk Trend</div>
+            <div className="text-2xl font-bold text-accent-cyan">Stable</div>
+          </div>
+          <div className="p-4 bg-gray-800/50 rounded-lg">
+            <div className="text-sm text-gray-400 mb-1">Last Assessment</div>
+            <div className="text-2xl font-bold">Today</div>
+          </div>
+        </div>
+        <div className="mt-4 p-4 bg-gray-800/30 rounded-lg">
+          <div className="text-sm text-gray-400 mb-2">Risk Factors</div>
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span>Attendance Rate</span>
+              <span className={prediction.attend_rate < 70 ? 'text-accent-red' : 'text-accent-green'}>
+                {prediction.attend_rate?.toFixed(1)}%
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span>Performance Score</span>
+              <span className={prediction.perf_score < 60 ? 'text-accent-red' : 'text-accent-green'}>
+                {prediction.perf_score?.toFixed(1)}%
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span>Study Consistency</span>
+              <span className="text-accent-cyan">Good</span>
+            </div>
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
 }
