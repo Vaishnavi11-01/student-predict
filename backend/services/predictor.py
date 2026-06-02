@@ -90,6 +90,16 @@ def predict_student(features: dict, student_id: int, db: Session) -> dict:
     perf_score = features["avg_score_30d"] + np.random.normal(0, 3)
     perf_score = min(100, max(0, perf_score))
     
+    # Performance category
+    if perf_score >= 85:
+        perf_category = "Excellent"
+    elif perf_score >= 70:
+        perf_category = "Good"
+    elif perf_score >= 50:
+        perf_category = "Average"
+    else:
+        perf_category = "Poor"
+    
     risk_level = (
         "high" if dropout_prob > 0.65 else
         "medium" if dropout_prob > 0.35 else
@@ -111,6 +121,7 @@ def predict_student(features: dict, student_id: int, db: Session) -> dict:
     return {
         "student_id": student_id,
         "perf_score": round(perf_score, 1),
+        "perf_category": perf_category,
         "attend_rate": round(features["attendance_rate_30d"] * 100, 1),
         "dropout_risk": round(dropout_prob * 100, 1),
         "risk_level": risk_level,
