@@ -14,6 +14,9 @@ class Student(Base):
     parent_phone = Column(String)
     parent_email = Column(String)
     income_tier = Column(Integer)  # 1–5
+    avg_score = Column(Float, default=0.0)
+    attendance_rate = Column(Float, default=0.0)
+    weak_subjects = Column(String, default="")
     
     grades = relationship("Grade", back_populates="student")
     attendance = relationship("Attendance", back_populates="student")

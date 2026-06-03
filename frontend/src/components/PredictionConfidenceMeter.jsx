@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Gauge, Target } from 'lucide-react';
+import { getPrediction } from '../api/api';
 
 export default function PredictionConfidenceMeter({ studentId = 1 }) {
   const [prediction, setPrediction] = useState({
@@ -9,12 +10,14 @@ export default function PredictionConfidenceMeter({ studentId = 1 }) {
   });
 
   useEffect(() => {
-    fetch(`http://localhost:8000/predict/${studentId}`)
-      .then(res => res.json())
-      .then(data => setPrediction({
-        dropout_risk: data.dropout_risk,
-        confidence: 91 // Default confidence, could be calculated from model
-      }))
+    getPrediction(studentId)
+      .then(res => {
+        const data = res.data;
+        setPrediction({
+          dropout_risk: data.dropout_risk,
+          confidence: 91 // Default confidence, could be calculated from model
+        });
+      })
       .catch(err => console.error('Error fetching prediction:', err));
   }, [studentId]);
 

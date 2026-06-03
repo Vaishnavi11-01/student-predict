@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, User, TrendingUp, Calendar, Brain, Target, History, AlertTriangle, Download } from 'lucide-react';
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, LineChart, Line } from 'recharts';
 import { useNavigate, useParams } from 'react-router-dom';
+import { getStudent, getPrediction, getSuggestions, downloadStudentReport } from '../api/api';
 
 export default function StudentDetail() {
   const { studentId } = useParams();
@@ -15,8 +16,8 @@ export default function StudentDetail() {
 
   const downloadPDF = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/reports/student/${studentId}`);
-      const blob = await response.blob();
+      const response = await downloadStudentReport(studentId);
+      const blob = new Blob([response.data], { type: 'application/pdf' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -31,33 +32,51 @@ export default function StudentDetail() {
   };
 
   useEffect(() => {
-    Promise.all([
-      fetch(`http://localhost:8000/students/${studentId}`).then(res => res.json()),
-      fetch(`http://localhost:8000/predict/${studentId}`).then(res => res.json()),
-      fetch(`http://localhost:8000/suggestions/${studentId}`).then(res => res.json())
-    ])
-    .then(([studentData, predictionData, suggestionsData]) => {
-      setStudent(studentData);
-      setPrediction(predictionData);
-      setSuggestions(suggestionsData.suggestions || []);
-      
-      // Generate prediction history from grades
-      if (studentData.grades) {
-        const history = studentData.grades.map((grade, index) => ({
-          date: grade.date,
-          score: grade.score,
-          subject: grade.subject,
-          prediction: grade.score * (1 + Math.random() * 0.1 - 0.05) // Simulated prediction
-        }));
-        setPredictionHistory(history);
+    let mounted = true;
+    const fetchStudentData = async () => {
+      try {
+        const studentResponse = await getStudent(studentId);
+        if (!mounted) return;
+        setStudent(studentResponse.data);
+
+        if (studentResponse.data.grades) {
+          const history = studentResponse.data.grades.map((grade) => ({
+            date: grade.date,
+            score: grade.score,
+            subject: grade.subject,
+            prediction: grade.score * (1 + Math.random() * 0.1 - 0.05)
+          }));
+          setPredictionHistory(history);
+        }
+      } catch (studentError) {
+        console.error('Error fetching student:', studentError);
       }
-      
-      setLoading(false);
-    })
-    .catch(err => {
-      console.error('Error fetching data:', err);
-      setLoading(false);
-    });
+
+      try {
+        const predictionResponse = await getPrediction(studentId);
+        if (!mounted) return;
+        setPrediction(predictionResponse.data);
+      } catch (predictionError) {
+        console.warn('Prediction endpoint failed:', predictionError);
+      }
+
+      try {
+        const suggestionsResponse = await getSuggestions(studentId);
+        if (!mounted) return;
+        setSuggestions(suggestionsResponse.data.suggestions || '');
+      } catch (suggestionsError) {
+        console.warn('Suggestions endpoint failed:', suggestionsError);
+      }
+
+      if (mounted) {
+        setLoading(false);
+      }
+    };
+
+    fetchStudentData();
+    return () => {
+      mounted = false;
+    };
   }, [studentId]);
 
   if (loading) {
@@ -76,10 +95,13 @@ export default function StudentDetail() {
     );
   }
 
-  const riskColor = prediction.risk_level === 'high' ? 'text-accent-red' : 
-                    prediction.risk_level === 'medium' ? 'text-accent-yellow' : 'text-accent-green';
-  const riskBg = prediction.risk_level === 'high' ? 'bg-accent-red/20' : 
-                 prediction.risk_level === 'medium' ? 'bg-accent-yellow/20' : 'bg-accent-green/20';
+  const riskLevel = prediction?.risk_level || 'unknown';
+  const riskColor = riskLevel === 'high' ? 'text-accent-red' : 
+                    riskLevel === 'medium' ? 'text-accent-yellow' : 
+                    riskLevel === 'low' ? 'text-accent-green' : 'text-gray-400';
+  const riskBg = riskLevel === 'high' ? 'bg-accent-red/20' : 
+                 riskLevel === 'medium' ? 'bg-accent-yellow/20' : 
+                 riskLevel === 'low' ? 'bg-accent-green/20' : 'bg-white/10';
 
   const gradeData = student.grades?.map(g => ({
     subject: g.subject,
@@ -119,12 +141,14 @@ export default function StudentDetail() {
           </div>
           <div className="flex-1">
             <h1 className="text-3xl font-bold mb-2">{student.name}</h1>
-            <div className="flex gap-4 text-gray-400 mb-4">
+            <div className="flex flex-wrap gap-4 text-gray-400 mb-4">
               <span>ID: {student.id}</span>
-              <span>Grade: {student.grade}</span>
+              <span>Grade: {student.class_name}</span>
+              <span>Avg Score: {student.avg_score?.toFixed(1)}%</span>
+              <span>Attendance: {student.attendance_rate?.toFixed(1)}%</span>
             </div>
             <div className={`inline-block px-4 py-2 rounded-full ${riskBg} ${riskColor} font-semibold capitalize`}>
-              {prediction.risk_level} Risk
+              {prediction?.risk_level ? `${prediction.risk_level} Risk` : 'Prediction Pending'}
             </div>
           </div>
         </div>
@@ -153,7 +177,7 @@ export default function StudentDetail() {
             </div>
             <div>
               <div className="text-sm text-gray-400 mb-1">Dropout Risk</div>
-              <div className="text-3xl font-bold text-accent-red">{(prediction.dropout_risk * 100).toFixed(1)}%</div>
+              <div className="text-3xl font-bold text-accent-red">{prediction?.dropout_risk?.toFixed(1) ?? 'N/A'}%</div>
             </div>
           </div>
         </motion.div>
@@ -225,12 +249,12 @@ export default function StudentDetail() {
             <div>
               <div className="flex justify-between mb-2">
                 <span className="text-sm text-gray-400">Dropout Risk</span>
-                <span className="font-bold text-accent-red">{(prediction.dropout_risk * 100).toFixed(1)}%</span>
+                <span className="font-bold text-accent-red">{prediction?.dropout_risk?.toFixed(1) ?? 'N/A'}%</span>
               </div>
               <div className="h-3 bg-gray-800 rounded-full overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
-                  animate={{ width: `${prediction.dropout_risk * 100}%` }}
+                  animate={{ width: `${Math.min(100, prediction?.dropout_risk || 0)}%` }}
                   transition={{ duration: 1 }}
                   className="h-full bg-accent-red rounded-full"
                 />
@@ -295,9 +319,9 @@ export default function StudentDetail() {
           Risk Monitoring
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className={`p-4 rounded-lg ${prediction.risk_level === 'high' ? 'bg-accent-red/20' : prediction.risk_level === 'medium' ? 'bg-accent-yellow/20' : 'bg-accent-green/20'}`}>
+          <div className={`p-4 rounded-lg ${riskLevel === 'high' ? 'bg-accent-red/20' : riskLevel === 'medium' ? 'bg-accent-yellow/20' : riskLevel === 'low' ? 'bg-accent-green/20' : 'bg-gray-800/50'}`}>
             <div className="text-sm text-gray-400 mb-1">Current Risk Level</div>
-            <div className={`text-2xl font-bold capitalize ${riskColor}`}>{prediction.risk_level}</div>
+            <div className={`text-2xl font-bold capitalize ${riskColor}`}>{riskLevel}</div>
           </div>
           <div className="p-4 bg-gray-800/50 rounded-lg">
             <div className="text-sm text-gray-400 mb-1">Risk Trend</div>
@@ -313,14 +337,14 @@ export default function StudentDetail() {
           <div className="space-y-2">
             <div className="flex justify-between">
               <span>Attendance Rate</span>
-              <span className={prediction.attend_rate < 70 ? 'text-accent-red' : 'text-accent-green'}>
-                {prediction.attend_rate?.toFixed(1)}%
+              <span className={prediction?.attend_rate < 70 ? 'text-accent-red' : 'text-accent-green'}>
+                {prediction?.attend_rate?.toFixed(1) ?? 'N/A'}%
               </span>
             </div>
             <div className="flex justify-between">
               <span>Performance Score</span>
-              <span className={prediction.perf_score < 60 ? 'text-accent-red' : 'text-accent-green'}>
-                {prediction.perf_score?.toFixed(1)}%
+              <span className={prediction?.perf_score < 60 ? 'text-accent-red' : 'text-accent-green'}>
+                {prediction?.perf_score?.toFixed(1) ?? 'N/A'}%
               </span>
             </div>
             <div className="flex justify-between">

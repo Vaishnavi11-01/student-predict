@@ -26,9 +26,11 @@ async def startup_event():
     """Include routers and initialize database on startup"""
     try:
         from routers import students, predictions, suggestions, dashboard, auth, reports
-        from routers import students_mongo, predictions_mongo, dashboard_mongo
-        from db.session import init_db
-        from db.mongodb import test_connection
+        from routers import students_mongo, predictions_mongo, dashboard_mongo, bulk_import, notifications
+        from db.session import init_db, SessionLocal
+        from db.mongodb import test_connection, sync_sql_to_mongo
+        from db.models import Student
+        from db.seed import seed_database
         
         # Include routers
         app.include_router(students.router, prefix="/students", tags=["students"])
@@ -38,13 +40,24 @@ async def startup_event():
         app.include_router(auth.router, prefix="/auth", tags=["auth"])
         app.include_router(reports.router, prefix="/reports", tags=["reports"])
         
-        # MongoDB routers (commented out until MongoDB is installed)
-        # app.include_router(students_mongo.router, prefix="/mongo/students", tags=["mongo-students"])
-        # app.include_router(predictions_mongo.router, prefix="/mongo/predict", tags=["mongo-predictions"])
-        # app.include_router(dashboard_mongo.router, prefix="/mongo/analytics", tags=["mongo-analytics"])
+        # MongoDB routers
+        app.include_router(students_mongo.router, prefix="/mongo/students", tags=["mongo-students"])
+        app.include_router(predictions_mongo.router, prefix="/mongo/predict", tags=["mongo-predictions"])
+        app.include_router(dashboard_mongo.router, prefix="/mongo/analytics", tags=["mongo-analytics"])
+        app.include_router(bulk_import.router, prefix="/import", tags=["import"])
+        app.include_router(notifications.router, prefix="/notifications", tags=["notifications"])
         
         # Initialize database
         init_db()
+
+        # Seed SQL database from dataset if empty
+        db = SessionLocal()
+        try:
+            if db.query(Student).count() == 0:
+                seed_database(db)
+            sync_sql_to_mongo(db)
+        finally:
+            db.close()
         
         # Test MongoDB connection (optional)
         test_connection()

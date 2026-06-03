@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { motion } from 'framer-motion';
+import { getStudents } from '../api/api';
 
 export default function AttendanceVsScore() {
   const [data, setData] = useState([
@@ -16,8 +17,8 @@ export default function AttendanceVsScore() {
 
   useEffect(() => {
     // Fetch real data from backend
-    fetch('http://localhost:8000/students/')
-      .then(res => res.json())
+    getStudents()
+      .then(res => res.data)
       .then(students => {
         const scatterData = students.map(student => ({
           attendance: student.latest_prediction ? student.latest_prediction.attend_rate : 0,

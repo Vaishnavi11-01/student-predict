@@ -24,7 +24,7 @@ def generate_student_report_card(student_data, prediction_data):
     student_info = [
         ['Student Name:', student_data.get('name', 'N/A')],
         ['Student ID:', str(student_data.get('id', 'N/A'))],
-        ['Grade:', student_data.get('grade', 'N/A')],
+        ['Grade:', student_data.get('class_name', student_data.get('grade', 'N/A'))],
         ['Report Date:', datetime.now().strftime('%Y-%m-%d')]
     ]
     
@@ -51,7 +51,7 @@ def generate_student_report_card(student_data, prediction_data):
         ['Performance Score', f"{prediction_data.get('perf_score', 0):.1f}%"],
         ['Performance Category', prediction_data.get('perf_category', 'N/A')],
         ['Attendance Rate', f"{prediction_data.get('attend_rate', 0):.1f}%"],
-        ['Dropout Risk', f"{prediction_data.get('dropout_risk', 0) * 100:.1f}%"],
+        ['Dropout Risk', f"{prediction_data.get('dropout_risk', 0):.1f}%"],
         ['Risk Level', prediction_data.get('risk_level', 'N/A').capitalize()]
     ]
     

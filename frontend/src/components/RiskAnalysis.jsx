@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { motion } from 'framer-motion';
+import { getStudents } from '../api/api';
 
 export default function RiskAnalysis() {
   const [data, setData] = useState([
@@ -11,8 +12,8 @@ export default function RiskAnalysis() {
 
   useEffect(() => {
     // Fetch real data from backend
-    fetch('http://localhost:8000/students/')
-      .then(res => res.json())
+    getStudents()
+      .then(res => res.data)
       .then(students => {
         const riskCounts = { high: 0, medium: 0, low: 0 };
         

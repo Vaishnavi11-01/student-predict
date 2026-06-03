@@ -175,7 +175,7 @@ def predict_student(features: dict, student_id: int, db: Session) -> dict:
     )
     
     # Save prediction to database
-    prediction = Prediction(
+    prediction_record = Prediction(
         student_id=student_id,
         perf_score=predicted_score,
         attend_rate=features["attendance_rate_30d"] * 100,
@@ -183,16 +183,78 @@ def predict_student(features: dict, student_id: int, db: Session) -> dict:
         risk_level=risk_level,
         generated_at=datetime.now()
     )
-    db.add(prediction)
+    db.add(prediction_record)
     db.commit()
     
     return {
         "student_id": student_id,
-        "predicted_score": round(predicted_score, 1),
-        "performance_category": perf_category,
+        "perf_score": round(predicted_score, 1),
+        "attend_rate": round(features["attendance_rate_30d"] * 100, 1),
         "dropout_risk": round(dropout_prob * 100, 1),
         "risk_level": risk_level,
+        "perf_category": perf_category
     }
+
+
+def predict_from_manual_input(study_hours: float, attendance_rate: float, previous_marks: float, assignment_score: float) -> dict:
+    score_model_path = os.path.join(os.path.dirname(__file__), '../models/student_model.pkl')
+    dropout_model_path = os.path.join(os.path.dirname(__file__), '../models/dropout_model.pkl')
+
+    if os.path.exists(score_model_path):
+        score_model = joblib.load(score_model_path)
+        score_vector = np.array([
+            study_hours,
+            attendance_rate,
+            previous_marks,
+            assignment_score
+        ]).reshape(1, -1)
+        predicted_score = float(score_model.predict(score_vector)[0])
+        predicted_score = min(100, max(0, predicted_score))
+    else:
+        predicted_score = previous_marks
+
+    if predicted_score >= 85:
+        perf_category = "Excellent"
+    elif predicted_score >= 70:
+        perf_category = "Good"
+    elif predicted_score >= 50:
+        perf_category = "Average"
+    else:
+        perf_category = "Poor"
+
+    try:
+        if os.path.exists(dropout_model_path):
+            dropout_model = joblib.load(dropout_model_path)
+            dropout_vector = np.array([
+                previous_marks,
+                attendance_rate / 100.0,
+                0.0,
+                0.0,
+                0.0,
+                3.0
+            ]).reshape(1, -1)
+            dropout_prob = float(dropout_model.predict_proba(dropout_vector)[0][1])
+        else:
+            dropout_prob = 1.0 - (attendance_rate / 100.0 * 0.4 + previous_marks / 100.0 * 0.4 + 0.3)
+            dropout_prob = max(0, min(1, dropout_prob))
+    except Exception:
+        dropout_prob = 1.0 - (attendance_rate / 100.0 * 0.4 + previous_marks / 100.0 * 0.4 + 0.3)
+        dropout_prob = max(0, min(1, dropout_prob))
+
+    risk_level = (
+        "high" if dropout_prob > 0.65 else
+        "medium" if dropout_prob > 0.35 else
+        "low"
+    )
+
+    return {
+        "perf_score": round(predicted_score, 1),
+        "attend_rate": round(attendance_rate, 1),
+        "dropout_risk": round(dropout_prob * 100, 1),
+        "risk_level": risk_level,
+        "perf_category": perf_category
+    }
+
 
 def get_attendance_sequence(student_id: int, db: Session):
     """Get attendance sequence for LSTM model"""

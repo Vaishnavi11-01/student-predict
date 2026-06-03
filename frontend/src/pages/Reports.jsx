@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FileText, Download, Filter, Search } from 'lucide-react';
+import { getStudents } from '../api/api';
+import NotificationsPanel from '../components/NotificationsPanel';
 
 export default function Reports() {
   const [reports, setReports] = useState([]);
@@ -8,8 +10,8 @@ export default function Reports() {
 
   useEffect(() => {
     // Fetch reports data from backend
-    fetch('http://localhost:8000/students/')
-      .then(res => res.json())
+    getStudents()
+      .then(res => res.data)
       .then(data => {
         const reportData = data.map(student => ({
           id: student.id,
@@ -95,6 +97,16 @@ export default function Reports() {
           </motion.div>
         ))}
       </div>
+
+      {/* Notifications Panel */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="mt-8"
+      >
+        <NotificationsPanel />
+      </motion.div>
     </div>
   );
 }

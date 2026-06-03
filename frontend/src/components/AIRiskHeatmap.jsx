@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { AlertCircle, Shield, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { getStudents, getPrediction } from '../api/api';
 
 const StudentRiskCard = ({ student, risk, delay, onClick }) => {
   const riskConfig = {
@@ -52,18 +53,16 @@ export default function AIRiskHeatmap() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch('http://localhost:8000/students/')
-      .then(res => res.json())
+    getStudents()
+      .then(res => res.data)
       .then(data => {
-        // Fetch predictions for each student
         const studentWithRisk = Promise.all(
           data.map(async (student) => {
-            const predRes = await fetch(`http://localhost:8000/predict/${student.id}`);
-            const predData = await predRes.json();
+            const predRes = await getPrediction(student.id);
             return {
               name: student.name,
               id: student.id,
-              risk: predData.risk_level
+              risk: predRes.data.risk_level
             };
           })
         );

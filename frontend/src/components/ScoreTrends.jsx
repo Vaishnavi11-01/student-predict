@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { motion } from 'framer-motion';
+import { getStudents } from '../api/api';
 
 export default function ScoreTrends() {
   const [data, setData] = useState([
@@ -14,8 +15,8 @@ export default function ScoreTrends() {
 
   useEffect(() => {
     // Fetch real data from backend
-    fetch('http://localhost:8000/students/')
-      .then(res => res.json())
+    getStudents()
+      .then(res => res.data)
       .then(students => {
         // Calculate average score per month from grades
         const monthlyScores = {};

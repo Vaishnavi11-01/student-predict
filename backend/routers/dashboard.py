@@ -26,3 +26,6 @@ def dashboard_stats(db: Session = Depends(get_db)):
         "attendance": round(avg_attendance, 1),
         "high_risk": high_risk
     }
+
+# Alias for compatibility
+get_dashboard_stats = dashboard_stats

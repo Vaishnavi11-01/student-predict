@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Users, TrendingUp, AlertTriangle, GraduationCap } from 'lucide-react';
+import { Users, TrendingUp, AlertTriangle, GraduationCap, Loader } from 'lucide-react';
+import { getAnalyticsStats, getStudents } from '../api/api';
 
-const StatCard = ({ icon: Icon, title, value, color, delay }) => (
+const StatCard = ({ icon: Icon, title, value, color, delay, loading }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
@@ -25,7 +26,7 @@ const StatCard = ({ icon: Icon, title, value, color, delay }) => (
       transition={{ delay: delay + 0.2, type: 'spring' }}
       className="text-4xl font-bold"
     >
-      {value}
+      {loading ? <Loader className="w-6 h-6 animate-spin" /> : value}
     </motion.div>
   </motion.div>
 );
@@ -37,12 +38,53 @@ export default function HeroAnalytics() {
     attendance: 0,
     high_risk: 0
   });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('http://localhost:8000/analytics/stats')
-      .then(res => res.json())
-      .then(data => setStats(data))
-      .catch(err => console.error('Error fetching stats:', err));
+    const loadStats = async () => {
+      try {
+        const response = await getAnalyticsStats();
+        const statsData = response.data || {};
+        
+        let finalStats = {
+          total_students: statsData.total_students || 0,
+          avg_score: statsData.avg_score || 0,
+          attendance: statsData.attendance || 0,
+          high_risk: statsData.high_risk || 0
+        };
+
+        // If total_students is 0, always fetch from students endpoint
+        if (finalStats.total_students === 0) {
+          try {
+            const studentsResponse = await getStudents();
+            const studentsList = studentsResponse.data || [];
+            finalStats.total_students = studentsList.length;
+          } catch (studentsErr) {
+            console.warn('Could not fetch students count:', studentsErr);
+          }
+        }
+
+        setStats(finalStats);
+      } catch (err) {
+        console.error('Error fetching stats:', err);
+        
+        // Final fallback: try to get student count
+        try {
+          const studentsResponse = await getStudents();
+          const studentsList = studentsResponse.data || [];
+          setStats(prev => ({
+            ...prev,
+            total_students: studentsList.length
+          }));
+        } catch (studentsErr) {
+          console.error('Error fetching students fallback:', studentsErr);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadStats();
   }, []);
 
   return (
@@ -53,6 +95,7 @@ export default function HeroAnalytics() {
         value={stats.total_students}
         color="text-accent-cyan"
         delay={0}
+        loading={loading}
       />
       <StatCard
         icon={TrendingUp}
@@ -60,6 +103,7 @@ export default function HeroAnalytics() {
         value={`${stats.avg_score}%`}
         color="text-accent-green"
         delay={0.1}
+        loading={loading}
       />
       <StatCard
         icon={GraduationCap}
@@ -67,6 +111,7 @@ export default function HeroAnalytics() {
         value={`${stats.attendance}%`}
         color="text-accent-purple"
         delay={0.2}
+        loading={loading}
       />
       <StatCard
         icon={AlertTriangle}
@@ -74,6 +119,7 @@ export default function HeroAnalytics() {
         value={stats.high_risk}
         color="text-accent-red"
         delay={0.3}
+        loading={loading}
       />
     </div>
   );

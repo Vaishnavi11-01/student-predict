@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Brain, Search, Bell, Moon, User, BarChart3, FileText, TrendingUp } from 'lucide-react';
+import { Brain, Search, Bell, Moon, User, BarChart3, FileText, TrendingUp, Upload } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { getStudents } from '../api/api';
 import HeroAnalytics from '../components/HeroAnalytics';
 import AIRiskHeatmap from '../components/AIRiskHeatmap';
 import AIInsightsPanel from '../components/AIInsightsPanel';
@@ -11,9 +12,16 @@ import PerformanceDistribution from '../components/PerformanceDistribution';
 import RiskAnalysis from '../components/RiskAnalysis';
 import ScoreTrends from '../components/ScoreTrends';
 import AttendanceVsScore from '../components/AttendanceVsScore';
+import StudentList from '../components/StudentList';
+import BulkImportModal from '../components/BulkImportModal';
 
 export default function ModernDashboard() {
   const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
+  const [importRefresh, setImportRefresh] = useState(0);
 
   return (
     <div className="min-h-screen">
@@ -35,8 +43,64 @@ export default function ModernDashboard() {
               type="text"
               placeholder="Search student..."
               className="bg-gray-800/50 border border-gray-700 rounded-full pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-accent-cyan w-64"
+              value={searchTerm}
+              onChange={async (e) => {
+                const term = e.target.value;
+                setSearchTerm(term);
+                
+                if (term.trim().length > 0) {
+                  setIsSearching(true);
+                  try {
+                    const response = await getStudents();
+                    const filtered = response.filter(student => 
+                      student.name.toLowerCase().includes(term.toLowerCase())
+                    );
+                    setSearchResults(filtered);
+                  } catch (error) {
+                    console.error('Search failed:', error);
+                    setSearchResults([]);
+                  } finally {
+                    setIsSearching(false);
+                  }
+                } else {
+                  setSearchResults([]);
+                }
+              }}
             />
+            {/* Search Results Dropdown */}
+            {searchTerm && searchResults.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
+                {searchResults.map((student) => (
+                  <motion.div
+                    key={student.id}
+                    whileHover={{ backgroundColor: 'rgba(31, 117, 255, 0.1)' }}
+                    onClick={() => {
+                      navigate(`/student/${student.id}`);
+                      setSearchTerm('');
+                      setSearchResults([]);
+                    }}
+                    className="px-4 py-3 border-b border-gray-700 last:border-b-0 cursor-pointer hover:bg-gray-700/50 transition-colors"
+                  >
+                    <div className="font-medium text-white">{student.name}</div>
+                    <div className="text-xs text-gray-400">{student.class_name} - {student.section}</div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+            {searchTerm && searchResults.length === 0 && !isSearching && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-50 px-4 py-3 text-sm text-gray-400">
+                No students found
+              </div>
+            )}
           </div>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            onClick={() => setIsBulkImportOpen(true)}
+            className="flex items-center gap-2 bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2 hover:border-accent-cyan transition-colors"
+          >
+            <Upload className="w-4 h-4" />
+            <span className="text-sm">Import</span>
+          </motion.button>
           <motion.button
             whileHover={{ scale: 1.05 }}
             onClick={() => navigate('/analytics')}
@@ -105,7 +169,16 @@ export default function ModernDashboard() {
           <ScoreTrends />
           <AttendanceVsScore />
         </div>
+
+        <h2 className="text-2xl font-bold mt-8 mb-4">All Students</h2>
+        <StudentList key={importRefresh} />
       </div>
+
+      <BulkImportModal 
+        isOpen={isBulkImportOpen} 
+        onClose={() => setIsBulkImportOpen(false)}
+        onSuccess={() => setImportRefresh(prev => prev + 1)}
+      />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { motion } from 'framer-motion';
+import { getStudents } from '../api/api';
 
 const COLORS = {
   excellent: '#10B981',
@@ -19,8 +20,8 @@ export default function PerformanceDistribution() {
 
   useEffect(() => {
     // Fetch real data from backend
-    fetch('http://localhost:8000/students/')
-      .then(res => res.json())
+    getStudents()
+      .then(res => res.data)
       .then(students => {
         const distribution = { excellent: 0, good: 0, average: 0, poor: 0 };
         

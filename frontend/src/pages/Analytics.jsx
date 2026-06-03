@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, Calendar, BarChart3 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import { getStudents } from '../api/api';
+import RiskAnalysisDashboard from '../components/RiskAnalysisDashboard';
+import PerformanceTrends from '../components/PerformanceTrends';
 
 export default function Analytics() {
   const [analyticsData, setAnalyticsData] = useState({
@@ -12,8 +15,8 @@ export default function Analytics() {
 
   useEffect(() => {
     // Fetch analytics data from backend
-    fetch('http://localhost:8000/students/')
-      .then(res => res.json())
+    getStudents()
+      .then(res => res.data)
       .then(data => {
         // Process data for charts
         const scoreTrends = data.map(s => ({
@@ -149,6 +152,12 @@ export default function Analytics() {
             </PieChart>
           </ResponsiveContainer>
         </motion.div>
+      </div>
+
+      {/* Enhanced Visualizations */}
+      <div className="mt-8 space-y-8">
+        <RiskAnalysisDashboard />
+        <PerformanceTrends />
       </div>
     </div>
   );
