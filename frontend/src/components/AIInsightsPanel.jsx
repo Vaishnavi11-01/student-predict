@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Brain, TrendingDown, Calendar, AlertCircle, TrendingUp, BookOpen, Users } from 'lucide-react';
+import { Brain, AlertCircle, TrendingUp, BookOpen, Users } from 'lucide-react';
 
 const InsightCard = ({ icon: Icon, title, content, type, delay }) => {
   const typeConfig = {
@@ -56,7 +56,8 @@ export default function AIInsightsPanel() {
         let highAttendanceCount = 0;
         let highRiskCount = 0;
         let avgScore = 0;
-        let avgAttendance = 0;
+        let avgAttendance = 0;let avgAttendance = 0;
+        
         
         students.forEach(student => {
           if (student.latest_prediction) {
@@ -65,7 +66,6 @@ export default function AIInsightsPanel() {
             const risk = student.latest_prediction.risk_level;
             
             avgScore += score;
-            avgAttendance += attendance;
             
             if (attendance < 60) lowAttendanceCount++;
             if (attendance >= 80) highAttendanceCount++;
@@ -74,7 +74,6 @@ export default function AIInsightsPanel() {
         });
         
         avgScore = avgScore / students.length;
-        avgAttendance = avgAttendance / students.length;
 
         // Generate insights based on data
         if (lowAttendanceCount > 0) {
