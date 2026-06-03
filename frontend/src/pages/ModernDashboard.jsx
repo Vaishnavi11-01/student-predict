@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Brain, Search, Bell, Moon, User, BarChart3, FileText, TrendingUp, Upload } from 'lucide-react';
+import { Brain, Search, Bell, Moon, Sun, User, BarChart3, FileText, TrendingUp, Upload } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { getStudents } from '../api/api';
 import HeroAnalytics from '../components/HeroAnalytics';
@@ -22,9 +22,17 @@ export default function ModernDashboard() {
   const [isSearching, setIsSearching] = useState(false);
   const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
   const [importRefresh, setImportRefresh] = useState(0);
+  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
+  const [notifications] = useState([
+    { id: 1, message: 'Student Emma Johnson is at high risk', time: '2 hours ago', type: 'warning' },
+    { id: 2, message: 'New prediction model available', time: '5 hours ago', type: 'info' },
+    { id: 3, message: 'Grade 10 attendance dropped by 5%', time: '1 day ago', type: 'alert' }
+  ]);
 
   return (
-    <div className="min-h-screen">
+    <div className={`min-h-screen ${isDarkMode ? 'dark' : 'light'}`}>
       {/* Top Navbar */}
       <nav className="glass-card mx-4 mt-4 p-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -125,10 +133,101 @@ export default function ModernDashboard() {
             <TrendingUp className="w-4 h-4" />
             <span className="text-sm">Predict</span>
           </motion.button>
-          <Bell className="w-5 h-5 text-gray-400 cursor-pointer hover:text-white transition-colors" />
-          <Moon className="w-5 h-5 text-gray-400 cursor-pointer hover:text-white transition-colors" />
-          <div className="w-8 h-8 rounded-full bg-accent-purple flex items-center justify-center cursor-pointer">
-            <User className="w-4 h-4" />
+          
+          {/* Notifications */}
+          <div className="relative">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              onClick={() => setShowNotifications(!showNotifications)}
+              className="relative p-2 rounded-lg hover:bg-gray-700/50 transition-colors"
+            >
+              <Bell className="w-5 h-5 text-gray-400 hover:text-white transition-colors" />
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-xs flex items-center justify-center">
+                {notifications.length}
+              </span>
+            </motion.button>
+            
+            {showNotifications && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="absolute right-0 top-full mt-2 w-80 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50"
+              >
+                <div className="p-4 border-b border-gray-700">
+                  <h3 className="font-semibold text-white">Notifications</h3>
+                </div>
+                <div className="max-h-64 overflow-y-auto">
+                  {notifications.map((notification) => (
+                    <div
+                      key={notification.id}
+                      className="p-3 border-b border-gray-700 hover:bg-gray-700/50 cursor-pointer"
+                    >
+                      <p className="text-sm text-white">{notification.message}</p>
+                      <p className="text-xs text-gray-400 mt-1">{notification.time}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="p-3 border-t border-gray-700">
+                  <button className="text-sm text-accent-cyan hover:underline w-full text-left">
+                    Mark all as read
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </div>
+          
+          {/* Theme Toggle */}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            onClick={() => setIsDarkMode(!isDarkMode)}
+            className="p-2 rounded-lg hover:bg-gray-700/50 transition-colors"
+          >
+            {isDarkMode ? (
+              <Moon className="w-5 h-5 text-gray-400 hover:text-white transition-colors" />
+            ) : (
+              <Sun className="w-5 h-5 text-yellow-400 hover:text-yellow-300 transition-colors" />
+            )}
+          </motion.button>
+          
+          {/* Profile Menu */}
+          <div className="relative">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              onClick={() => setShowProfile(!showProfile)}
+              className="w-8 h-8 rounded-full bg-accent-purple flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity"
+            >
+              <User className="w-4 h-4" />
+            </motion.button>
+            
+            {showProfile && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="absolute right-0 top-full mt-2 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50"
+              >
+                <div className="p-4 border-b border-gray-700">
+                  <p className="font-semibold text-white">Admin User</p>
+                  <p className="text-xs text-gray-400">admin@edupulse.com</p>
+                </div>
+                <div className="p-2">
+                  <button
+                    onClick={() => navigate('/profile')}
+                    className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-gray-700/50 rounded transition-colors"
+                  >
+                    Profile Settings
+                  </button>
+                  <button className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-gray-700/50 rounded transition-colors">
+                    Account Settings
+                  </button>
+                  <button className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-gray-700/50 rounded transition-colors">
+                    Help & Support
+                  </button>
+                  <button className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-gray-700/50 rounded transition-colors">
+                    Logout
+                  </button>
+                </div>
+              </motion.div>
+            )}
           </div>
         </div>
       </nav>

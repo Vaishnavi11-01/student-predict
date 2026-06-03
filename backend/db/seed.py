@@ -23,6 +23,13 @@ def derive_risk_level(dropout_prob: float) -> str:
 
 def seed_database(db: Session):
     """Seed the database with real dataset values for testing."""
+    # Clear existing data to ensure fresh seed
+    db.query(Prediction).delete()
+    db.query(Attendance).delete()
+    db.query(Grade).delete()
+    db.query(Student).delete()
+    db.commit()
+    
     dataset_path = os.path.join(os.path.dirname(__file__), '..', 'dataset', 'student_data.csv')
     students = []
 
@@ -36,6 +43,12 @@ def seed_database(db: Session):
             seed_random_data(db)
             return
 
+        student_names = [
+            "Emma Johnson", "Liam Smith", "Olivia Brown", "Noah Davis", 
+            "Ava Miller", "Ethan Wilson", "Sophia Moore", "Mason Taylor",
+            "Isabella Anderson", "William Thomas"
+        ]
+        
         for index, row in enumerate(rows):
             try:
                 attendance_pct = float(row['Attendance'])
@@ -46,12 +59,14 @@ def seed_database(db: Session):
                 continue
 
             student = Student(
-                name=f"Student {index + 1}",
+                name=student_names[index % len(student_names)],
                 class_name=random.choice(["Grade 10", "Grade 11", "Grade 12"]),
                 section=random.choice(["A", "B", "C"]),
                 parent_phone=f"+123456789{index + 1}",
                 parent_email=f"parent{index + 1}@example.com",
-                income_tier=random.randint(1, 5)
+                income_tier=random.randint(1, 5),
+                avg_score=previous_marks,
+                attendance_rate=attendance_pct
             )
             db.add(student)
             students.append((student, attendance_pct, previous_marks, assignment_score, final_score))
@@ -105,15 +120,33 @@ def seed_database(db: Session):
 
 
 def seed_random_data(db: Session):
+    # Clear existing data to ensure fresh seed
+    db.query(Prediction).delete()
+    db.query(Attendance).delete()
+    db.query(Grade).delete()
+    db.query(Student).delete()
+    db.commit()
+    
+    student_names = [
+        "Emma Johnson", "Liam Smith", "Olivia Brown", "Noah Davis", 
+        "Ava Miller", "Ethan Wilson", "Sophia Moore", "Mason Taylor",
+        "Isabella Anderson", "William Thomas"
+    ]
+    
     students = []
     for i in range(1, 11):
+        avg_score = random.uniform(50, 95)
+        attendance_rate = random.uniform(60, 100)
+        
         student = Student(
-            name=f"Student {i}",
+            name=student_names[i - 1],
             class_name=random.choice(["Grade 10", "Grade 11", "Grade 12"]),
             section=random.choice(["A", "B", "C"]),
             parent_phone=f"+123456789{i}",
             parent_email=f"parent{i}@example.com",
-            income_tier=random.randint(1, 5)
+            income_tier=random.randint(1, 5),
+            avg_score=avg_score,
+            attendance_rate=attendance_rate
         )
         db.add(student)
         students.append(student)

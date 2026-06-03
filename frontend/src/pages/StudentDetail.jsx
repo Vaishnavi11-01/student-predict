@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, User, TrendingUp, Calendar, Brain, Target, History, AlertTriangle, Download } from 'lucide-react';
+import { ArrowLeft, User, TrendingUp, Calendar, Brain, Target, History, AlertTriangle, Download, Phone, Mail, DollarSign } from 'lucide-react';
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, LineChart, Line } from 'recharts';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getStudent, getPrediction, getSuggestions, downloadStudentReport } from '../api/api';
+import SubjectsTable from '../components/SubjectsTable';
 
 export default function StudentDetail() {
   const { studentId } = useParams();
@@ -63,9 +64,12 @@ export default function StudentDetail() {
       try {
         const suggestionsResponse = await getSuggestions(studentId);
         if (!mounted) return;
-        setSuggestions(suggestionsResponse.data.suggestions || '');
+        const suggestionsData = suggestionsResponse.data.suggestions;
+        // Ensure suggestions is always an array
+        setSuggestions(Array.isArray(suggestionsData) ? suggestionsData : (suggestionsData ? [suggestionsData] : []));
       } catch (suggestionsError) {
         console.warn('Suggestions endpoint failed:', suggestionsError);
+        setSuggestions([]);
       }
 
       if (mounted) {
@@ -144,9 +148,29 @@ export default function StudentDetail() {
             <div className="flex flex-wrap gap-4 text-gray-400 mb-4">
               <span>ID: {student.id}</span>
               <span>Grade: {student.class_name}</span>
+              <span>Section: {student.section || 'N/A'}</span>
               <span>Avg Score: {student.avg_score?.toFixed(1)}%</span>
               <span>Attendance: {student.attendance_rate?.toFixed(1)}%</span>
             </div>
+            <div className="flex flex-wrap gap-4 text-gray-400 mb-4 text-sm">
+              <span className="flex items-center gap-1">
+                <Phone className="w-4 h-4" />
+                {student.parent_phone || 'N/A'}
+              </span>
+              <span className="flex items-center gap-1">
+                <Mail className="w-4 h-4" />
+                {student.parent_email || 'N/A'}
+              </span>
+              <span className="flex items-center gap-1">
+                <DollarSign className="w-4 h-4" />
+                Income Tier: {student.income_tier || 'N/A'}
+              </span>
+            </div>
+            {student.weak_subjects && (
+              <div className="text-sm text-accent-red mb-2">
+                <span className="font-medium">Weak Subjects:</span> {student.weak_subjects}
+              </div>
+            )}
             <div className={`inline-block px-4 py-2 rounded-full ${riskBg} ${riskColor} font-semibold capitalize`}>
               {prediction?.risk_level ? `${prediction.risk_level} Risk` : 'Prediction Pending'}
             </div>
@@ -353,6 +377,16 @@ export default function StudentDetail() {
             </div>
           </div>
         </div>
+      </motion.div>
+
+      {/* Subjects Table */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.8 }}
+        className="mt-6"
+      >
+        <SubjectsTable grades={student.grades} />
       </motion.div>
     </div>
   );
