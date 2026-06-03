@@ -16,24 +16,24 @@ export default function Analytics() {
   useEffect(() => {
     // Fetch analytics data from backend
     getStudents()
-      .then(res => res.data)
-      .then(data => {
+      .then(res => {
+        const data = res.data || [];
         // Process data for charts
         const scoreTrends = data.map(s => ({
           name: s.name,
-          score: s.grades?.[0]?.score || 0
+          score: s.avg_score || 0
         }));
 
         const attendanceAnalysis = data.map(s => ({
           name: s.name,
-          attendance: s.attendance?.length || 0
+          attendance: s.attendance_rate || 0
         }));
 
         const performanceDistribution = [
-          { name: 'Excellent', value: data.filter(s => s.grades?.[0]?.score > 80).length },
-          { name: 'Good', value: data.filter(s => s.grades?.[0]?.score > 60 && s.grades?.[0]?.score <= 80).length },
-          { name: 'Average', value: data.filter(s => s.grades?.[0]?.score > 40 && s.grades?.[0]?.score <= 60).length },
-          { name: 'Below Average', value: data.filter(s => s.grades?.[0]?.score <= 40).length }
+          { name: 'Excellent', value: data.filter(s => s.avg_score > 80).length },
+          { name: 'Good', value: data.filter(s => s.avg_score > 60 && s.avg_score <= 80).length },
+          { name: 'Average', value: data.filter(s => s.avg_score > 40 && s.avg_score <= 60).length },
+          { name: 'Below Average', value: data.filter(s => s.avg_score <= 40).length }
         ];
 
         setAnalyticsData({

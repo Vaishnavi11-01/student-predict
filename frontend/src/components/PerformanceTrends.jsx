@@ -15,7 +15,7 @@ export default function PerformanceTrends() {
       setLoading(true);
       try {
         const response = await getStudents();
-        const students = response;
+        const students = response.data || [];
 
         // Sort by ID to simulate time progression
         const sorted = [...students].sort((a, b) => a.id - b.id);

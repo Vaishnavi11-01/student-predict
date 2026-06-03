@@ -20,7 +20,7 @@ export default function RiskAnalysisDashboard() {
       setLoading(true);
       try {
         const response = await getStudents();
-        const students = response;
+        const students = response.data || [];
 
         // Calculate risk distribution
         const getRisk = (score) => {
