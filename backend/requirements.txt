@@ -6,7 +6,9 @@ numpy
 scikit-learn
 joblib
 pymongo
+motor
 passlib[bcrypt]
 python-jose[cryptography]
 python-multipart
 reportlab
+python-dotenv
