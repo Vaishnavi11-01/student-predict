@@ -5,6 +5,8 @@ import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Ba
 import { useNavigate, useParams } from 'react-router-dom';
 import { getStudent, getPrediction, getSuggestions, downloadStudentReport } from '../api/api';
 import SubjectsTable from '../components/SubjectsTable';
+import SubjectPerformance from '../components/SubjectPerformance';
+import PredictionHistory from '../components/PredictionHistory';
 
 export default function StudentDetail() {
   const { studentId } = useParams();
@@ -387,6 +389,26 @@ export default function StudentDetail() {
         className="mt-6"
       >
         <SubjectsTable grades={student.grades} />
+      </motion.div>
+
+      {/* Subject Performance */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.9 }}
+        className="mt-6"
+      >
+        <SubjectPerformance grades={student.grades} />
+      </motion.div>
+
+      {/* Prediction History */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.0 }}
+        className="mt-6"
+      >
+        <PredictionHistory studentId={studentId} />
       </motion.div>
     </div>
   );

@@ -32,9 +32,9 @@ export default function ModernDashboard() {
   ]);
 
   return (
-    <div className={`min-h-screen ${isDarkMode ? 'dark' : 'light'}`}>
+    <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-900'}`}>
       {/* Top Navbar */}
-      <nav className="glass-card mx-4 mt-4 p-4 flex items-center justify-between">
+      <nav className={`mx-4 mt-4 p-4 flex items-center justify-between rounded-xl border transition-colors duration-300 ${isDarkMode ? 'glass-card' : 'bg-white border-gray-200 shadow-md'}`}>
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-gradient-to-r from-accent-cyan to-accent-purple flex items-center justify-center">
             <Brain className="w-6 h-6" />
@@ -50,7 +50,7 @@ export default function ModernDashboard() {
             <input
               type="text"
               placeholder="Search student..."
-              className="bg-gray-800/50 border border-gray-700 rounded-full pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-accent-cyan w-64"
+              className={`rounded-full pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-accent-cyan w-64 transition-colors duration-300 ${isDarkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-gray-50 border-gray-300 text-gray-900'}`}
               value={searchTerm}
               onChange={async (e) => {
                 const term = e.target.value;
@@ -104,7 +104,7 @@ export default function ModernDashboard() {
           <motion.button
             whileHover={{ scale: 1.05 }}
             onClick={() => setIsBulkImportOpen(true)}
-            className="flex items-center gap-2 bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2 hover:border-accent-cyan transition-colors"
+            className={`flex items-center gap-2 rounded-lg px-3 py-2 transition-colors duration-300 ${isDarkMode ? 'bg-gray-800/50 border-gray-700 hover:border-accent-cyan' : 'bg-gray-50 border-gray-300 hover:border-accent-cyan'}`}
           >
             <Upload className="w-4 h-4" />
             <span className="text-sm">Import</span>
@@ -112,7 +112,7 @@ export default function ModernDashboard() {
           <motion.button
             whileHover={{ scale: 1.05 }}
             onClick={() => navigate('/analytics')}
-            className="flex items-center gap-2 bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2 hover:border-accent-cyan transition-colors"
+            className={`flex items-center gap-2 rounded-lg px-3 py-2 transition-colors duration-300 ${isDarkMode ? 'bg-gray-800/50 border-gray-700 hover:border-accent-cyan' : 'bg-gray-50 border-gray-300 hover:border-accent-cyan'}`}
           >
             <BarChart3 className="w-4 h-4" />
             <span className="text-sm">Analytics</span>
@@ -120,7 +120,7 @@ export default function ModernDashboard() {
           <motion.button
             whileHover={{ scale: 1.05 }}
             onClick={() => navigate('/reports')}
-            className="flex items-center gap-2 bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2 hover:border-accent-cyan transition-colors"
+            className={`flex items-center gap-2 rounded-lg px-3 py-2 transition-colors duration-300 ${isDarkMode ? 'bg-gray-800/50 border-gray-700 hover:border-accent-cyan' : 'bg-gray-50 border-gray-300 hover:border-accent-cyan'}`}
           >
             <FileText className="w-4 h-4" />
             <span className="text-sm">Reports</span>
@@ -151,23 +151,23 @@ export default function ModernDashboard() {
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="absolute right-0 top-full mt-2 w-80 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50"
+                className={`absolute right-0 top-full mt-2 w-80 rounded-lg shadow-xl z-50 transition-colors duration-300 ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}
               >
-                <div className="p-4 border-b border-gray-700">
-                  <h3 className="font-semibold text-white">Notifications</h3>
+                <div className={`p-4 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                  <h3 className={`font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Notifications</h3>
                 </div>
                 <div className="max-h-64 overflow-y-auto">
                   {notifications.map((notification) => (
                     <div
                       key={notification.id}
-                      className="p-3 border-b border-gray-700 hover:bg-gray-700/50 cursor-pointer"
+                      className={`p-3 border-b cursor-pointer transition-colors duration-300 ${isDarkMode ? 'border-gray-700 hover:bg-gray-700/50' : 'border-gray-200 hover:bg-gray-100'}`}
                     >
-                      <p className="text-sm text-white">{notification.message}</p>
-                      <p className="text-xs text-gray-400 mt-1">{notification.time}</p>
+                      <p className={`text-sm ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{notification.message}</p>
+                      <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{notification.time}</p>
                     </div>
                   ))}
                 </div>
-                <div className="p-3 border-t border-gray-700">
+                <div className={`p-3 border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                   <button className="text-sm text-accent-cyan hover:underline w-full text-left">
                     Mark all as read
                   </button>
@@ -203,26 +203,26 @@ export default function ModernDashboard() {
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="absolute right-0 top-full mt-2 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50"
+                className={`absolute right-0 top-full mt-2 w-48 rounded-lg shadow-xl z-50 transition-colors duration-300 ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}
               >
-                <div className="p-4 border-b border-gray-700">
-                  <p className="font-semibold text-white">Admin User</p>
-                  <p className="text-xs text-gray-400">admin@edupulse.com</p>
+                <div className={`p-4 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                  <p className={`font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Admin User</p>
+                  <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>admin@edupulse.com</p>
                 </div>
                 <div className="p-2">
                   <button
                     onClick={() => navigate('/profile')}
-                    className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-gray-700/50 rounded transition-colors"
+                    className={`w-full text-left px-3 py-2 text-sm rounded transition-colors duration-300 ${isDarkMode ? 'text-gray-300 hover:bg-gray-700/50' : 'text-gray-700 hover:bg-gray-100'}`}
                   >
                     Profile Settings
                   </button>
-                  <button className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-gray-700/50 rounded transition-colors">
+                  <button className={`w-full text-left px-3 py-2 text-sm rounded transition-colors duration-300 ${isDarkMode ? 'text-gray-300 hover:bg-gray-700/50' : 'text-gray-700 hover:bg-gray-100'}`}>
                     Account Settings
                   </button>
-                  <button className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-gray-700/50 rounded transition-colors">
+                  <button className={`w-full text-left px-3 py-2 text-sm rounded transition-colors duration-300 ${isDarkMode ? 'text-gray-300 hover:bg-gray-700/50' : 'text-gray-700 hover:bg-gray-100'}`}>
                     Help & Support
                   </button>
-                  <button className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-gray-700/50 rounded transition-colors">
+                  <button className={`w-full text-left px-3 py-2 text-sm rounded transition-colors duration-300 ${isDarkMode ? 'text-red-400 hover:bg-gray-700/50' : 'text-red-600 hover:bg-gray-100'}`}>
                     Logout
                   </button>
                 </div>
@@ -239,8 +239,8 @@ export default function ModernDashboard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
-          <p className="text-gray-400">Student Performance Intelligence System</p>
+          <h1 className={`text-3xl font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Dashboard</h1>
+          <p className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>Student Performance Intelligence System</p>
         </motion.div>
 
         <HeroAnalytics />
@@ -257,7 +257,7 @@ export default function ModernDashboard() {
           </div>
         </div>
 
-        <h2 className="text-2xl font-bold mt-8 mb-4">Analytics Dashboard</h2>
+        <h2 className={`text-2xl font-bold mt-8 mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Analytics Dashboard</h2>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <PerformanceDistribution />
@@ -269,7 +269,7 @@ export default function ModernDashboard() {
           <AttendanceVsScore />
         </div>
 
-        <h2 className="text-2xl font-bold mt-8 mb-4">All Students</h2>
+        <h2 className={`text-2xl font-bold mt-8 mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>All Students</h2>
         <StudentList key={importRefresh} />
       </div>
 
