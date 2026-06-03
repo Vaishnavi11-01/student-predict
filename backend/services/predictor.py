@@ -137,23 +137,32 @@ def predict_student(features: dict, student_id: int, db: Session) -> dict:
     
     # ========== DROPOUT RISK PREDICTION (dropout_model.pkl) ==========
     dropout_model_path = os.path.join(os.path.dirname(__file__), '../models/dropout_model.pkl')
-    if os.path.exists(dropout_model_path):
-        dropout_model = joblib.load(dropout_model_path)
-        
-        # Prepare features for dropout model
-        dropout_vector = np.array([
-            features["avg_score_30d"],
-            features["attendance_rate_30d"],
-            features["weak_subject_count"],
-            features["consecutive_absences"],
-            features["score_trend"],
-            features["income_tier"]
-        ]).reshape(1, -1)
-        
-        # Predict dropout probability
-        dropout_prob = float(dropout_model.predict_proba(dropout_vector)[0][1])
-    else:
-        # Fallback to rule-based if model not found
+    try:
+        if os.path.exists(dropout_model_path):
+            dropout_model = joblib.load(dropout_model_path)
+            
+            # Prepare features for dropout model
+            dropout_vector = np.array([
+                features["avg_score_30d"],
+                features["attendance_rate_30d"],
+                features["weak_subject_count"],
+                features["consecutive_absences"],
+                features["score_trend"],
+                features["income_tier"]
+            ]).reshape(1, -1)
+            
+            # Predict dropout probability
+            dropout_prob = float(dropout_model.predict_proba(dropout_vector)[0][1])
+        else:
+            # Fallback to rule-based if model not found
+            print(f"Warning: dropout_model.pkl not found at {dropout_model_path}")
+            avg_score = features["avg_score_30d"]
+            attendance_rate = features["attendance_rate_30d"]
+            dropout_prob = 1.0 - (attendance_rate * 0.4 + avg_score / 100 * 0.4 + (5 - features["income_tier"]) / 5 * 0.2)
+            dropout_prob = max(0, min(1, dropout_prob))
+    except Exception as e:
+        print(f"Error loading dropout_model: {e}")
+        # Fallback to rule-based
         avg_score = features["avg_score_30d"]
         attendance_rate = features["attendance_rate_30d"]
         dropout_prob = 1.0 - (attendance_rate * 0.4 + avg_score / 100 * 0.4 + (5 - features["income_tier"]) / 5 * 0.2)

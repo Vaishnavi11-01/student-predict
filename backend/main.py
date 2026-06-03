@@ -27,9 +27,15 @@ app.include_router(reports.router, prefix="/reports", tags=["reports"])
 @app.on_event("startup")
 async def startup_event():
     """Initialize database on startup"""
-    init_db()
+    try:
+        init_db()
+    except Exception as e:
+        print(f"Database initialization failed: {e}")
     # Test MongoDB connection (optional)
-    test_connection()
+    try:
+        test_connection()
+    except Exception as e:
+        print(f"MongoDB connection test failed: {e}")
 
 @app.get("/")
 def root():
