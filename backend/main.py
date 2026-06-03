@@ -10,7 +10,7 @@ app = FastAPI(title="EduPredict API")
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # In production, specify your Vercel domain
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
